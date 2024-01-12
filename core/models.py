@@ -104,6 +104,17 @@ class ActivityLog(models.Model):
     def __str__(self):
         return f"[{self.date}] {self.model_name}#{self.record_id} {self.record_name} {self.operation}"
 
+    def get_human_readable_log(self):
+        if self.operation == "C":
+            name = f" with the name {self.record_name} " if self.record_name else ""
+            return f"{self.model_name}{name}created"
+        if self.operation == "U":
+            name = f" with the name {self.record_name} " if self.record_name else ""
+            return f"{self.model_name}[#{self.record_id}]{name}has been updated"
+        if self.operation == "D":
+            name = f" with the name {self.record_name} " if self.record_name else ""
+            return f"{self.model_name}[#{self.record_id}]{name}has been deleted"
+
     @classmethod
     def log_save(cls, model, instance, name=None):
         """Helper to log the Creation or Update of a record"""
