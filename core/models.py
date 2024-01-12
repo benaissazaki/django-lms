@@ -84,3 +84,42 @@ class Semester(models.Model):
 
     def __str__(self):
         return self.semester
+
+
+class ActivityLog(models.Model):
+    """Keeps track of Creation, Update, and Deletion of records"""
+
+    OPERATION_CHOICES = (
+        ("C", "Creation"),
+        ("U", "Update"),
+        ("D", "Deletion"),
+    )
+
+    model_name = models.CharField(max_length=255)
+    record_id = models.PositiveIntegerField(null=True, blank=True)
+    record_name = models.CharField(max_length=255, null=True, blank=True)
+    operation = models.CharField(max_length=1, choices=OPERATION_CHOICES)
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"[{self.date}] {self.model_name}#{self.record_id} {self.record_name} {self.operation}"
+
+    @classmethod
+    def log_save(cls, model, instance, name=None):
+        """Helper to log the Creation or Update of a record"""
+        cls.objects.create(
+            model_name=model.__name__,
+            record_id=instance.id if instance.id else None,
+            record_name=name,
+            operation="C" if not instance.id else "U",
+        )
+
+    @classmethod
+    def log_delete(cls, model, instance, name=None):
+        """Helper to log the Deletion of a record"""
+        cls.objects.create(
+            model_name=model.__name__,
+            record_id=instance.id if instance.id else None,
+            record_name=name,
+            operation="D",
+        )
